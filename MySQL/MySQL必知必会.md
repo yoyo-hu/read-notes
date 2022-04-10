@@ -731,4 +731,424 @@ WHERE vend_id IN (1001,1002);
 
 只能使用一条ORDER BY子句， 它必须出现在最后一条SELECT语句之后,不允许使用多条ORDER BY子句 。
 
-18 
+## 18 全文本搜索  
+
+### 18.1 理解全文本搜索  
+
+所有这些限制以及更多的限制都可以用全文本搜索来解决。 在使用全文本搜索时， MySQL不需要分别査看每个行， 不需要分别分析和处理每个词。 MySQL创建指定列中各词的一个索引， 搜索可以针对这些词进行。
+
+### 18.2 使用全文本搜索  
+
+为了进行全文本搜索， 必须索引被搜索的列， 而且要随着数据的改变不断地重新索引。 在对表列进行适当设计后， MySQL会自动进行所有的索引和重新索引。
+在索引之后， SELECT可与Match 和Against( )—起使用以实际执行搜索 。
+
+#### 18.2.1 启用全文本搜索支持  
+
+一般在创建表时启用全文本搜索。 CREATE TABLE语句（ 第21章中介绍） 接受FULLTEXT子句， 它给出被索引列的一个逗号分隔的列表。
+
+```
+CREATE TABLE productnotes
+（
+	note_id int NOT NULL AUTO_INCREMENT,
+	prod_id char(10) NOT NULL,
+	note_data datetime NOT NULL,
+	note _text text NULL,
+	PRIMARY KEY(note_id),
+	FULLTEXT(note_text)
+)ENCINE=MylSAM;
+```
+
+MySQL根据子句FULLTEXT< note_text)的指示对它进行索引。 这里的FULLTEXT索引单个列， 如果需要可以指定多个列 。
+
+在定义之后， MySQL自动维护该索引。 在增加、 更新或删除行时，索引随之自动更新。
+可以在创建表时指定FULLTEXT， 或者在稍后指定（ 在这种情况下所有已有数据必须立即索引）。  
+
+#### 18.2.2 进行全文本搜索  
+
+进行索引之后，就可以调用Match ( )和Against( )执行全文本搜索，其中Match()指定要搜索的列，Against（）指定要使用的搜索表达式。
+
+```
+mysql> SELECT note_text
+    -> FROM productnotes
+    -> WHERE Match(note_text) Against('rabbit');
++----------------------------------------------------------------------------------------------------------------------+
+| note_text                                                                                                            |
++----------------------------------------------------------------------------------------------------------------------+
+| Customer complaint: rabbit has been able to detect trap, food apparently less effective now.                         |
+| Quantity varies, sold by the sack load.
+All guaranteed to be bright and orange, and suitable for use as rabbit bait. |
++----------------------------------------------------------------------------------------------------------------------+
+2 rows in set (0.03 sec)
+
+```
+
+事实是刚才的搜索可以简单地用LIKE子句完成  
+
+```
+mysql> SELECT note_text
+    -> FROM productnotes
+    -> WHERE note_text LIKE '%rabbit%';
++----------------------------------------------------------------------------------------------------------------------+
+| note_text                                                                                                            |
++----------------------------------------------------------------------------------------------------------------------+
+| Quantity varies, sold by the sack load.
+All guaranteed to be bright and orange, and suitable for use as rabbit bait. |
+| Customer complaint: rabbit has been able to detect trap, food apparently less effective now.                         |
++----------------------------------------------------------------------------------------------------------------------+
+2 rows in set (0.01 sec)
+
+```
+
+上述两条SELECT语句都不包含ORDER BY子句。 后者（ 使用LIKE)以不特别有用的顺序返回数据。 前者（ 使用全文本搜索） 返回以文本匹配的良好程度排序的数据。 两个行都包含词rabbit， 但包含词rabbit作为第3个词的行的等级比作为第20个词的行高。这很重要。全文本搜索的一个重要部分就是对结果排序。 具有较高等级的行先返回。
+
+为演示排序如何工作， 请看以下例子：  
+
+```
+mysql> SELECT note_text, Match(note_text) Against('rabbit') as the_rank FRO
+M productnotes;
++-----------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
+| note_text                                                                                                                                                 | the_rank           |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
+| Customer complaint:
+Sticks not individually wrapped, too easy to mistakenly detonate all at once.
+Recommend individual wrapping.                          |                  0 |
+| Can shipped full, refills not available.
+Need to order new can if refill needed.                                                                          |                  0 |
+| Safe is combination locked, combination not provided with safe.
+This is rarely a problem as safes are typically blown up or dropped by customers.         |                  0 |
+| Quantity varies, sold by the sack load.
+All guaranteed to be bright and orange, and suitable for use as rabbit bait.                                      | 1.5905543565750122 |
+| Included fuses are short and have been known to detonate too quickly for some customers.
+Longer fuses are available (item FU1) and should be recommended. |                  0 |
+| Matches not included, recommend purchase of matches or detonator (item DTNTR).                                                                            |                  0 |
+| Please note that no returns will be accepted if safe opened using explosives.                                                                             |                  0 |
+| Multiple customer returns, anvils failing to drop fast enough or falling backwards on purchaser. Recommend that customer considers using heavier anvils.  |                  0 |
+| Item is extremely heavy. Designed for dropping, not recommended for use with slings, ropes, pulleys, or tightropes.                                       |                  0 |
+| Customer complaint: rabbit has been able to detect trap, food apparently less effective now.                                                              | 1.6408053636550903 |
+| Shipped unassembled, requires common tools (including oversized hammer).                                                                                  |                  0 |
+| Customer complaint:
+Circular hole in safe floor can apparently be easily cut with handsaw.                                                                |                  0 |
+| Customer complaint:
+Not heavy enough to generate flying stars around head of victim. If being purchased for dropping, recommend ANV02 or ANV03 instead.   |                  0 |
+| Call from individual trapped in safe plummeting to the ground, suggests an escape hatch be added.
+Comment forwarded to vendor.                            |                  0 |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
+14 rows in set (0.00 sec)
+```
+
+这里， 在SELECT而不是WHERE子句中使用Match( )和Against0。
+这使所有行都被返回（ 因为没有WHERE子句）。 Match( > 和
+Against( >用来建立一个计算列（ 别名为 rank), 此列包含全文本搜索
+计算出的等级值。 等级由MySQL根据行中词的数目、 唯一词的数目、 整
+个索引中词的总数以及包含该词的行的数目计算出来。 正如所见， 不包
+含词rabbit的行等级为0  。
+
+#### 18.2.3 使用查询扩展 
+
+`Against('anvils' WITH QUERY EXPANSION);`
+
+ 查询扩展用来设法放宽所返回的全文本搜索结果的范围。考虑下面的情况。 你想找出所有提到anvils的注释。只有一个注释包含词anvils，但你还想找出可能与你的搜索有关的所有其他行， 即使它们不包含词anvils。
+
+这也是查询扩展的一项任务。 在使用查询扩展时， MySQL对数据和
+索引进行两遍扫描来完成搜索：
+□ 首先 ， 进行一个基本的全文本搜索， 找出与搜索条件匹配的所有
+行;
+□ 其次， MySQL==检查这些匹配行并选择所有有用的词==（ 我们将会简
+要地解释MySQL如何断定什么有用， 什么无用X
+□ 再其次， MySQL再次进行全文本搜索， ==这次不仅使用原来的条件，
+而且还使用所有有用的词==。  
+
+下面举一个例子， 首先进行一个简单的全文本搜索， 没有查询扩展 ：
+
+```
+mysql> SELECT note_text
+    -> FROM productnotes
+    -> WHERE Match (note_text) Against('anvils');
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| note_text                                                                                                                                                |
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Multiple customer returns, anvils failing to drop fast enough or falling backwards on purchaser. Recommend that customer considers using heavier anvils. |
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+只有一行包含词anvils， 因此只返回一行。  
+
+下面是相同的搜索， 这次使用查询扩展:  
+
+```
+mysql> SELECT note_text
+    -> FROM productnotes
+    -> WHERE Match(note_text) Against('anvils' WITH QUERY EXPANSION);
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| note_text                                                                                                                                                |
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Multiple customer returns, anvils failing to drop fast enough or falling backwards on purchaser. Recommend that customer considers using heavier anvils. |
+| Customer complaint:
+Sticks not individually wrapped, too easy to mistakenly detonate all at once.
+Recommend individual wrapping.                         |
+| Customer complaint:
+Not heavy enough to generate flying stars around head of victim. If being purchased for dropping, recommend ANV02 or ANV03 instead.  |
+| Please note that no returns will be accepted if safe opened using explosives.                                                                            |
+| Customer complaint: rabbit has been able to detect trap, food apparently less effective now.                                                             |
+| Customer complaint:
+Circular hole in safe floor can apparently be easily cut with handsaw.                                                               |
+| Matches not included, recommend purchase of matches or detonator (item DTNTR).                                                                           |
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+7 rows in set (0.01 sec)
+
+```
+
+这次返回了7行。 第一行包含词anvils, 因此等级最高。 第二行与anvils无关， 但==因为它包含第一行中的两个词( customer和recommend ), 所以也被检索出来==。 第3行也包含这两个相同的词， 但它们在文本中的位置更靠后且分开得更远， 因此也包含这一行， 但等级为第三。 第三行确实也没有涉及anvils (按它们的产品名）。
+
+#### 18.2.4 布尔文本搜索
+
+MySQL支持全文本搜索的另外一种形式， 称为布尔方式（ boolean mode)。 以布尔方式， 可以提供关于如下内容的细节。
+
+□ 要匹配的词；
+□ 要排斥的词（如果某行包含这个词， 则不返回该行， 即使它包含其他指定的词也是如此)；
+□ 排列提示（指定某些词比其他词更重要， 更重要的词等级更髙)；
+□ 表达式分组；
+□ 另外一些内容。  
+
+即使没有定义FULLTEXT索引， 也可以使用它。 但这是一种非常缓慢的操作( 其性能将随着数据量的增加而降低 )。    
+
+为演示==IN BOOLEAN MODE==的作用， 举一个简单的例子;  
+
+```
+mysql> SELECT note_text
+    -> FROM productnotes
+    -> WHERE Match (note_text)Against('heavy' IN BOOLEAN MODE);
++---------------------------------------------------------------------------------------------------------------------------------------------------------+
+| note_text                                                                                                                                               |
++---------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Item is extremely heavy. Designed for dropping, not recommended for use with slings, ropes, pulleys, or tightropes.                                     |
+| Customer complaint:
+Not heavy enough to generate flying stars around head of victim. If being purchased for dropping, recommend ANV02 or ANV03 instead. |
++---------------------------------------------------------------------------------------------------------------------------------------------------------+
+2 rows in set (0.01 sec)
+
+```
+
+此全文本搜索检索包含词heavy的所有行（ 有两行)。 其中使用了关键字IN BOOLEAN MODE, 但实际上没有指定布尔操作符，因此， 其结果与没有指定布尔方式的结果相同。
+
+为了匹配包含heavy但不包含任意以rope开始的词的行， 可使用以
+下査询:  
+
+```
+mysql> SELECT note_text 
+    -> FROM productnotes
+    -> WHERE Match(note_text) Against('heavy -rope*' IN BOOLEAN MODE);
++---------------------------------------------------------------------------------------------------------------------------------------------------------+
+| note_text                                                                                                                                               |
++---------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Customer complaint:
+Not heavy enough to generate flying stars around head of victim. If being purchased for dropping, recommend ANV02 or ANV03 instead. |
++---------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+这一次仍然匹配词heavy， 但- rope\*明确地指示MySQL 排除包含rope* (任何以rope开始的词) 的行。
+
+表18-1列出支持的所有布尔操作符。  
+
+![image-20220410010800710](MySQL必知必会.assets/image-20220410010800710-16495240825401.png)
+
+下面举几个例子， 说明某些操作符如何使用:  
+
+`Match(note — text) Against('+rabbit +bait' IN BOOLEAN MODE)`
+
+这个搜索匹配==都包含==词rabbit和bait的行  
+
+`WHERE Match(note_text) AgainstC * rabbit bait’ IN BOOLEAN MODE);  `
+
+没有指定操作符， 这个搜索匹配包含rabbit和bait中的==至少一个词==的行。  
+
+`Match(note_text) Againstrabbit bait"' IN BOOLEAN MODE):  `
+
+这个搜索匹配短语rabbit bait而不是匹配两个词rabbit和bait.
+
+`WHERE Match(note_text) Against(’>rabbit <carrot' IN BOOLEAN MODE);  `
+
+匹配rabbit和carrot， 增加前者的等级， 降低后者的等级。  这样的话rabbit在排序中分量更重，只出现rabbit的比只出现carrot的等级更高，排在更前面，具体的等级排序要根据计算决定。
+
+#### 18.2.5 全文本搜索的使用说明  
+
+在结束本章之前， 给出关于全文本搜索的某些重要的说明。
+□ 在索引全文本数据时， 短词被忽略且从索引中排除。 短词定义那些具有3个或3个以下字符的词(如果需要， 这个数目可以改)。
+□ MySQL带有一个内建的非用词（ stopword) 列表， 这些词在索引全文本数据时总是被忽略。 如果需要， 可以覆盖这个列表（ 请参阅MySQL文档以了解如何完成此工作)。
+□ 许多词出现的频率很髙， 搜索它们没有用处（返回太多的结果)。因此， MySQL规定了一条50%规则， 如果一个词出现在50%以上的行中， 则将它作为一个非用词忽略。 50%规则不用于IN BOOLEAN MODE。
+□ 如果表中的行数少于3行， 则全文本搜索不返回结果（因为每个词或者不出现， 或者至少出现在50%的行中）。
+□ 忽略词中的单引号。 例如， dorTt索引为dont。
+□ 不具有词分隔符（包括日语和汉语） 的语言不能恰当地返回全文本搜索结果。
+□ 如前所述， 仅在MylSAM数据库引擎中支持全文本搜索。
+
+innodb不支持FULLTEXT类型的全文索引，但是innodb可以使用sphinx插件支持全文索引，并且效果更好。
+
+## 19 插入数据
+
+### 19.2 插入完整的行  
+
+```
+INSERT INTO Customers
+VALUES(NULL,
+'Pep E. LaPew',
+'100 Main Street',
+'Los Angeles',
+'CA',
+'90046',
+'USA',
+NULL,
+NULL):
+```
+
+虽然这种语法很简单， 但并不安全， 应该尽量避免使用。 上面的SQL语句高度依赖于表中列的定义次序， 并且还依赖于其次序容易获得的信息。 即使可得到这种次序信息， 也不能保证下一次表结构变动后各个列保持完全相同的次序。 因此， 编写依赖于特定列次序的SQL语句是很不安全的。 如果这样做， 有时难免会出问题。
+
+编写INSERT语句的更安全（ 不过更烦琐） 的方法如下：  
+
+```
+INSERT INTO customers(cust_name,
+cust_address,
+cust_city,
+cust_state,
+cust_zip,
+cust_country,
+cust_contact,
+cust_emai1)
+VALUES('Pep E. LaPew',
+'100 Main Street',
+'Los Angeles',
+'CA',
+'90046',
+'USA',
+NULL,
+NULL):
+```
+
+此例子完成与前一个INSERT语句完全相同的工作， 但在表名后
+的括号里明确地给出了列名。 在插入行时， MySQL将用VALUES
+列表中的相应值填入列表中的对应项。 VALUES中的第一个值对应于第一个指定的列名。 第二个值对应于第二个列名， 如此等等.
+
+因为提供了列名， VALUES必须以其指定的次序匹配指定的列名， 不一定按各个列出现在实际表中的次序。 其优点是， 即使表的结构改变，INSERT语句仍然能正确工作。 你会发现CUSt_id的NULL值 是 不 必 要 ，cust_id列并没有出现在列表中， 所以不需任何值。
+
+如果对表中不允许NULL值且没有默认值的列不给出值， 则MySQL将产生一条错误消息， 并且相应的行插入不成功。
+
+**提高整体性能** ：数据库经常被多个客户访问， 对处理什么请求以及用什么次序处理进行管理是MySQL的任务， INSERT操作可能很耗时（ 特别是有很多索引需要更新时 )， 而且它可能降低等待处理的SELECT语句的性能，如果数据检索是最重要的（ 通常是这样）， 则你可以通过在INSERT 和 INTO之 间 添 加 关 键 字 LOW_PRIORITY ， 指 示MySQL降低INSERT语句的优先级， 如下所示：
+==INSERT LOW_PRIORXTY INTO==
+
+顺便说一下， 这也适用于下一章介绍的UPDATE和DELETE语句。  
+
+### 19.3 插入多个行  
+
+使用多条INSERT语句， 甚至一次提交它们， 每条语句用一个==分号==结束， 如下所示：
+
+![image-20220410134319212](MySQL必知必会.assets/image-20220410134319212.png)
+
+或者， 只要每条INSERT语句中的列名（ 和次序） 相同， 可以如下组
+合各语句：  
+
+```
+INSERT INTO customers(cust_name,
+cust_address,
+cust_city,
+cust_state,
+cust_zip,
+cust_country,
+cust_contact,
+cust_emai1)
+VALUES('Pep E. LaPew',
+'100 Main Street',
+'Los Angeles',
+'CA',
+'90046',
+'USA',
+NULL,
+NULL)，
+('Gep A. Pew',
+'50 Main Street',
+'Los Angeles',
+'CA',
+'93242',
+'USA',
+NULL,
+NULL):
+
+```
+
+其中单条INSERT语句有多组值， 每组值用==一对圆括号括起来，
+用逗号分隔==。  
+
+MySQL 用单条 INSERT 语 句 处 理 多 个 插 入 比 使 用 多 条INSERT语句==快==。  
+
+### 19.4 插入检索出的数据  
+
+将一条SELECT语句的结果插入表中。 这就是所谓的INSERT SELECT， 顾名思义， 它是由一条INSERT语句和一条SELECT语句组成的。
+
+假如你想从另一表中合并客户列表到你的customers表。 不需要每次读取一行， 然后再将它用INSERT插入， 可以如下进行：
+
+```
+INSERT INTO customers(cust_name,
+cust_address,
+cust_city,
+cust_state,
+cust_zip,
+cust_country,
+cust_contact,
+cust_emai1)
+SELECT cust_name,
+cust_address,
+cust_city,
+cust_state,
+cust_zip,
+cust_country,
+cust_contact,
+cust_emai1
+FROM custnew;
+```
+
+## 20 更新删除数据
+
+### 20.1 更新数据  
+
+```
+UPDATE customers
+SET cust_email = 'eliner@fudd.com'
+WHERE cust_id = 10005；
+```
+
+UPDATE语句总是以要更新的表的名字开始 。
+
+SET命令用来将新值赋给被更新的列。
+
+ 更新多个列的语法稍有不同：  
+
+```
+UPDATE customers
+SET cust_name = 'The Fudds',
+	cust_email = 'eliner@fudd.com'
+WHERE cust_id = 10005；
+```
+
+只需要使用单个SET命令， 每个“ 列=值” 对之间
+用逗号分隔（最后一列之后不用逗号)。   
+
+==IGNORE关键字== 如果用UPDATE语句更新多行， 并且在些行中的一行或多行时出一个现错误， 则整个UPDATE操作被取消（ 错误发生前更新的所有行被恢复到它们原来的值 )• 为即使是发生错误， 也继续进行更新， 可使用IGNORE关键字， 如下所示:UPDATE IGNORE customers*... 
+
+### 20.2 删除数据  
+
+```
+DELETE FROM customers
+WHERE cust_id = 10006;
+```
+
+更快的删除: 如果想从表中==删除所有行==,不要使用DELETE,可使用 ==TRUNCATE TABLE==语句， 它完成相同的工作 , 但速度更快（ TRUNCATE实际是删除原来的表并重新创建一个表， 而不
+是逐行删除表中的数据 )。
+
+DELETE不删除表本身。
+
+## 21 创建和操纵表
+
+### 21.1 创建表 
+
+
+
