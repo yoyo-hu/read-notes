@@ -74,7 +74,7 @@ MySQL Query Browser为一个图形交互客户机， 用来编写和执行MySQL�
 
 使用use关键字
 
-```
+```mysql
 mysql> use mysql
 Reading table information for completion of table and column names
 You can turn off this feature to get a quicker startup with -A
@@ -86,7 +86,7 @@ Database changed
 
 SHOW DATABASES;
 
-```
+```mysql
 mysql> SHOW DATABASES;
 +--------------------+
 | Database           |
@@ -101,7 +101,7 @@ mysql> SHOW DATABASES;
 
 SHOW TABLES;
 
-```
+```mysql
 mysql> SHOW TABLES;
 +------------------------------------------------------+
 | Tables_in_mysql                                      |
@@ -120,7 +120,7 @@ SHOW也可以用来显示表列:
 
 SHOW COLUMNS FROM component;
 
-```
+```mysql
 mysql> SHOW COLUMNS FROM component;
 +--------------------+--------------+------+-----+---------+----------------+
 | Field              | Type         | Null | Key | Default | Extra          |
@@ -159,14 +159,14 @@ mysql> SHOW COLUMNS FROM component;
 
 ### 4.7 使用完全限定的表名  
 
-```
+```mysql
 SELECT products.prod_name
 FROM products ;
 ```
 
 表名也可以是完全限定的， 如下所示：
 
-```
+```mysql
 SELECT products .prod_name
 FROM crashcourse.products;
 ```
@@ -179,7 +179,7 @@ FROM crashcourse.products;
 
 使用 ORDER BY 子句
 
-```
+```mysql
 SELECT prod—name
 FROM products
 ORDER BY prod_name ;
@@ -187,7 +187,7 @@ ORDER BY prod_name ;
 
 ### 5.2 按多个列排序
 
-```
+```mysql
 SELECT prod_idf prod—price, prod_name
 FROM products
 ORDER BY prod_price, prod_name:
@@ -199,7 +199,7 @@ ORDER BY prod_price, prod_name:
 
 默认升序，降序必须指定DESC关键字  
 
-```
+```mysql
 SELECT procLid, prod_price, prod_name
 FROM products
 ORDER BY prod_price DESC:
@@ -240,7 +240,7 @@ BETWEEN 在指定的两个值之间
 
 使用IS NULL子句  
 
-```
+```mysql
 SELECT FROM products prod_name
 WHERE prod_price IS NULL;
 ```
@@ -255,7 +255,7 @@ AND OR
 
 IN取合法值的由逗号分隔的清单， 全都括在圆括号中。
 
-```
+```mysql
 mysql> SELECT prod_name,prod_price
     -> FROM products
     -> WHERE vend_id IN (1002,1003)
@@ -289,7 +289,7 @@ LIKE是谓词而不是搮作符
 最常使用的通配符是百分号 (%).在搜索串中， ％表示任何字符出现
 任意次数。  
 
-```
+```mysql
 SELECT prod_id , prod_name
 FROM products
 WHERE prod.nante LIKE 'jet5％’ ;
@@ -319,7 +319,7 @@ REGEXP后所跟的东西作为正则表达式（ 与文字正文1000匹配的一
 
 .是正则表达式语言中一个特殊的字符。 它表示匹配任意一个字符  
 
-```
+```mysql
 SELECT prod_name
 FROM products
 WHERE prod
@@ -334,7 +334,7 @@ LIKE匹配整个列。 如果被匹配的文本在列值中出现， LIKE将不�
 
 为搜索两个串之一 （或者为这个串，或者为另一个串），使用丨，如下：
 
-```
+```mysql
 SELECT prod—name
 FROM products
 WHERE prod_name REGEXP '1000|2000|3000 *
@@ -345,7 +345,7 @@ ORDER BY prod_name
 
 匹配任何单一字符。 只匹配特定的字符，可通过指定一组用[ 和]括起来的字符来完成。
 
-```
+```mysql
 SELECT FROM products prod_name
 WHERE prod.name REGEXP '[123] Ton'/REGEXP '1|2|3 Ton'
 ORDER BY prod_name;
@@ -393,7 +393,7 @@ ORDER BY prod_name;
 
 举几个例子 
 
-```
+```mysql
 mysql> SELECT prod_name
     -> FROM products
     -> WHERE prod_name REGEXP '\\([0-9] sticks?\\)'
@@ -409,7 +409,7 @@ mysql> SELECT prod_name
 
 正则表达式`\ \([0\- 9 ] StickS?\ \)`需要解说一下。 `\ \`(匹配） ，[ 0-9] 匹配任意数字（ 这个例子中为1和5 )， sticks?匹配stick和sticks (s后的?使s可选，因为？匹配它前面的任何字符的0次或1次出现）， \ \ ) 匹配） 。 没有？， 匹配stick和sticks会非常困难。 
 
-```
+```mysql
 mysql> SELECT prod_name FROM products WHERE prod_name REGEXP '[[:digit:]]{4}' ORDER BY prod_name;
 +--------------+
 | prod_name    |
@@ -431,7 +431,7 @@ mysql> SELECT prod_name FROM products WHERE prod_name REGEXP '[[:digit:]]{4}' OR
 
 
 
-```
+```mysql
 where prod_name REGEXP '^[0-9\\.]'
 ```
 
@@ -499,7 +499,7 @@ Upper( )将文本转换为大写
 使用Soundex0函数进行搜索， 它匹配所有发音类似于
 Y.Lie的联系名。
 
-```
+```mysql
 mysql> SELECT cust_name,cust_contact FROM customers WHERE Soundex(cust_contact)=Soundex('Y Lie');
 +-------------+--------------+
 | cust_name   | cust_contact |
@@ -513,7 +513,7 @@ mysql> SELECT cust_name,cust_contact FROM customers WHERE Soundex(cust_contact)=
 
 ![image-20220408205151912](MySQL必知必会.assets/image-20220408205151912.png)
 
-```
+```mysql
 SELECT cust_id p order_num
 FROM orders
 WHERE Date(order_date) = '2005-09-01';
@@ -564,7 +564,7 @@ SQL还允许创建子查询（ subquery ) , 即嵌套在其他查询中的查询
 
 ### 14.2 利用子查询进行过滤  
 
-```
+```mysql
 SELECT cust_id
 FROM orders
 WHERE order_num IN (SELECT order_num
@@ -576,7 +576,7 @@ WHERE prod_id='TNT2');
 
 ### 14.3 作为计算字段使用子查询  
 
-```
+```mysql
 mysql> SELECT cust_name,cust_state,
     -> (SELECT COUNT(*)
     -> FROM orders
@@ -613,7 +613,7 @@ mysql> SELECT cust_name,cust_state,
 
 ### 15.2 创建联结  
 
-```
+```mysql
 WHERE vendors •vend_id = products . vend_id
 ```
 
@@ -627,7 +627,7 @@ WHERE vendors •vend_id = products . vend_id
 
 目前为止所用的联结称为等值联结 (equijoin)  
 
-```
+```mysql
 mysql> SELECT vend_name,prod_name,prod_price
     -> FROM vendors INNER JOIN products
     -> ON vendors.vend_id = products.vend_id;
@@ -665,7 +665,7 @@ mysql> SELECT vend_name,prod_name,prod_price
 生产ID为DTNTA的物品的供应商， 然后找出这个供应商生产的其他物品。
 下面是解决此问题的一种方法：  
 
-```
+```mysql
 SELECT prod_id, prod_name
 FROM products
 WHERE vend_id=(SELECT vend_id
@@ -701,7 +701,7 @@ UNION操作符将多条SELECT语句组合成一个结果集。
 以利用WHERE子句来完成此工作， 不过这次我们将使用UNION。
 正如所述， 创建UNION涉及编写多条SELECT语句。  
 
-```
+```mysql
 SELECT vend_id, prod_id, prod_price
 FROM products
 WHERE prod_price <= 5
@@ -746,7 +746,7 @@ WHERE vend_id IN (1001,1002);
 
 一般在创建表时启用全文本搜索。 CREATE TABLE语句（ 第21章中介绍） 接受FULLTEXT子句， 它给出被索引列的一个逗号分隔的列表。
 
-```
+```mysql
 CREATE TABLE productnotes
 （
 	note_id int NOT NULL AUTO_INCREMENT,
@@ -767,7 +767,7 @@ MySQL根据子句FULLTEXT< note_text)的指示对它进行索引。 这里的FUL
 
 进行索引之后，就可以调用Match ( )和Against( )执行全文本搜索，其中Match()指定要搜索的列，Against（）指定要使用的搜索表达式。
 
-```
+```mysql
 mysql> SELECT note_text
     -> FROM productnotes
     -> WHERE Match(note_text) Against('rabbit');
@@ -784,7 +784,7 @@ All guaranteed to be bright and orange, and suitable for use as rabbit bait. |
 
 事实是刚才的搜索可以简单地用LIKE子句完成  
 
-```
+```mysql
 mysql> SELECT note_text
     -> FROM productnotes
     -> WHERE note_text LIKE '%rabbit%';
@@ -803,7 +803,7 @@ All guaranteed to be bright and orange, and suitable for use as rabbit bait. |
 
 为演示排序如何工作， 请看以下例子：  
 
-```
+```mysql
 mysql> SELECT note_text, Match(note_text) Against('rabbit') as the_rank FRO
 M productnotes;
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------+
@@ -860,7 +860,7 @@ Against( >用来建立一个计算列（ 别名为 rank), 此列包含全文本�
 
 下面举一个例子， 首先进行一个简单的全文本搜索， 没有查询扩展 ：
 
-```
+```mysql
 mysql> SELECT note_text
     -> FROM productnotes
     -> WHERE Match (note_text) Against('anvils');
@@ -876,7 +876,7 @@ mysql> SELECT note_text
 
 下面是相同的搜索， 这次使用查询扩展:  
 
-```
+```mysql
 mysql> SELECT note_text
     -> FROM productnotes
     -> WHERE Match(note_text) Against('anvils' WITH QUERY EXPANSION);
@@ -915,7 +915,7 @@ MySQL支持全文本搜索的另外一种形式， 称为布尔方式（ boolean
 
 为演示==IN BOOLEAN MODE==的作用， 举一个简单的例子;  
 
-```
+```mysql
 mysql> SELECT note_text
     -> FROM productnotes
     -> WHERE Match (note_text)Against('heavy' IN BOOLEAN MODE);
@@ -935,7 +935,7 @@ Not heavy enough to generate flying stars around head of victim. If being purcha
 为了匹配包含heavy但不包含任意以rope开始的词的行， 可使用以
 下査询:  
 
-```
+```mysql
 mysql> SELECT note_text 
     -> FROM productnotes
     -> WHERE Match(note_text) Against('heavy -rope*' IN BOOLEAN MODE);
@@ -989,7 +989,7 @@ innodb不支持FULLTEXT类型的全文索引，但是innodb可以使用sphinx插
 
 ### 19.2 插入完整的行  
 
-```
+```mysql
 INSERT INTO Customers
 VALUES(NULL,
 'Pep E. LaPew',
@@ -1006,7 +1006,7 @@ NULL):
 
 编写INSERT语句的更安全（ 不过更烦琐） 的方法如下：  
 
-```
+```mysql
 INSERT INTO customers(cust_name,
 cust_address,
 cust_city,
@@ -1047,7 +1047,7 @@ NULL):
 或者， 只要每条INSERT语句中的列名（ 和次序） 相同， 可以如下组
 合各语句：  
 
-```
+```mysql
 INSERT INTO customers(cust_name,
 cust_address,
 cust_city,
@@ -1086,7 +1086,7 @@ MySQL 用单条 INSERT 语 句 处 理 多 个 插 入 比 使 用 多 条INSERT
 
 假如你想从另一表中合并客户列表到你的customers表。 不需要每次读取一行， 然后再将它用INSERT插入， 可以如下进行：
 
-```
+```mysql
 INSERT INTO customers(cust_name,
 cust_address,
 cust_city,
@@ -1110,7 +1110,7 @@ FROM custnew;
 
 ### 20.1 更新数据  
 
-```
+```mysql
 UPDATE customers
 SET cust_email = 'eliner@fudd.com'
 WHERE cust_id = 10005；
@@ -1122,7 +1122,7 @@ SET命令用来将新值赋给被更新的列。
 
  更新多个列的语法稍有不同：  
 
-```
+```mysql
 UPDATE customers
 SET cust_name = 'The Fudds',
 	cust_email = 'eliner@fudd.com'
@@ -1136,7 +1136,7 @@ WHERE cust_id = 10005；
 
 ### 20.2 删除数据  
 
-```
+```mysql
 DELETE FROM customers
 WHERE cust_id = 10006;
 ```
@@ -1150,5 +1150,544 @@ DELETE不删除表本身。
 
 ### 21.1 创建表 
 
+```mysql
+CREATE TABLE customers
+(
+  cust_id      int       NOT NULL AUTO_INCREMENT,
+  cust_name    char(50)  NOT NULL ,
+  cust_address char(50)  NULL ,
+  cust_city    char(50)  NULL ,
+  cust_state   char(5)   NULL ,
+  cust_zip     char(10)  NULL ,
+  cust_country char(50)  NULL ,
+  cust_contact char(50)  NULL ,
+  cust_email   char(255) NULL ,
+  PRIMARY KEY (cust_id)
+) ENGINE=InnoDB;
+```
 
+实际的表定义（所有列） 括在圆括号之中。 各列之间用逗号分隔。   
+
+主键值必须唯一。  
+
+订单号（order_num列） 和订单物品（ order_item列） 的
+组合是唯一的， 从而适合作A主键， 其定义为：
+PRIMARY KEY (order_num, order_item)  
+
+每个表只允许一个AUTO_INCREMENT列， 而且它必须被索引（如,通过使它成为主键）。  
+
+==覆盖AUTO_INCREMEMT ：==
+
+你可以简单地在INSERT语句中指定一个值， 只要它是唯一的（ 至今尚未使用过） 即可，该值将被用来替代自动生成的值。 后续的增量将开始使用该手工插入的值。   
+
+如何在使用AUTO_INGREMENT列时获得这个值呢？ 可 使用last_insert_id( )函数获得这个值， 如下所示
+
+`SELECT last_insert_id( )`
+
+此语句返回最后一个AUTO_INCREMENT值， 然后可以将它用于后续的MySQL语句。  
+
+==默认值：==
+
+`quantity int DEFAULT 1,`
+
+### 21.2 更新表  
+
+ALTER TABLE语句  
+
+增加列：
+
+```mysql
+ALTER TABLE vendors
+ADO vend_phone CHAR(20);
+```
+
+删除刚刚添加的列， 可以这样做 ：
+
+```mysql
+ALTER TABLE vendors
+DROP COLUMN vend_phone;
+```
+
+ALTER TABLE的一种常见用途是定义外键。   下面是用来定义本书中的表所用的外键的代码：  
+
+```mysql
+ALTER TABLE orderitems ADD CONSTRAINT fk_orderitems_orders FOREIGN KEY (order_num) REFERENCES orders (order_num);
+
+ALTER TABLE orderitems ADD CONSTRAINT fk_orderitems_products FOREIGN KEY (prod_id) REFERENCES products (prod_id);
+
+ALTER TABLE orders ADD CONSTRAINT fk_orders_customers FOREIGN KEY (cust_id) REFERENCES customers (cust_id);
+
+ALTER TABLE products ADD CONSTRAINT fk_products_vendors FOREIGN KEY (vend_id) REFERENCES vendors (vend_id);
+```
+
+### 21.3 删除表 
+
+使用DROP TABLE语句即可
+
+### 21.4 重命名表 
+
+```mysql
+RENAME TABLE backup_customers TO customers;
+```
+
+## 22 使用视图
+
+### 22.1 视图
+
+相当于临时表
+
+#### 22.1.1 为什么使用视图  
+
+□ 重用SQL语句。
+□ 简化复杂的SQL操作。 在编写查询后， 可以方便地重用它而不必知道它的基本查询细节。
+□ 使用表的组成部分而不是整个表。
+□ 保护数据。 可以给用户授予表的特定部分的访问权限而不是整个表的访问权限。
+□ 更改数据格式和表示。 视图可返回与底层表的表示和格式不同的数据。
+
+#### 22.1.2 视图的规则和限制  
+
+□ 与表一样， 视图必须唯一命名（ 不能给视图取与别的视图或表相同的名字)。
+□ 对于可以创建的视图数目没有限制。
+□ 为了创建视图， 必须具有足够的访问权限。 这些限制通常由数据库管理人员授予。
+□ 视图可以嵌套， 即可以利用从其他视图中检索数据的查询来构造一个视图。
+□ ORDER BY可以用在视图中， 但如果从该视图检索数据SELECT中也含有ORDER BY, 那么该视图中的ORDER BY将被覆盖。
+□ 视图不能索引， 也不能有关联的触发器或默认值。
+□ 视图可以和表一起使用。 例如， 编写一条联结表和视图的SELECT语句。
+
+## 22.2 使用视图
+
+□ 视图用`CREATE VIEW`语句来创建。
+□ 使用`SHOW CREATE VIEW viewname`； 来査看创建视图的语句。
+□ 用DROP删除视图， 其语法为`DROP VIEW viewname`;更新视图时， 可以先用DROP再用CREATE， 也可以直接用`CREATE
+OR REPLACE VIEW`。 如果要更新的视图不存在， 则第2条更新语
+句会创建一个视图； 如果要更新的视图存在， 则第2条更新语句会替换原有视图。
+
+#### 22.2.1 利用视图简化复杂的联结  
+
+```mysql
+CREATE VIEW productcustomers 
+SELECT cust_name, cust_contact, prod_id
+FROM customers, orders, orderiterns
+WHERE customers.cust_id = orders.cust_id
+AND orderiterns.order_num = orders.order_num;
+```
+
+```
+SELECT cust_name, cust_contact
+FROM productcustomers
+```
+
+可以看出， 视图极大地简化了复杂SQL语句的使用。 利用视图， 可一次性编写基础的SQL， 然后根据需要多次使用。  
+
+#### 22.2.2 用视图重新格式化检索出的数据 
+
+```
+mysql> SELECT Concat(RTrim(vend_name), ' (', RTrim(vend_country), ')' ) AS vend_tit1e
+    -> FROM vendors
+    -> ORDER BY vend_name;
++-------------------------+
+| vend_tit1e              |
++-------------------------+
+| ACME (USA)              |
+| Anvils R Us (USA)       |
+| Furball Inc. (USA)      |
+| Jet Set (England)       |
+| Jouets Et Ours (France) |
+| LT Supplies (USA)       |
++-------------------------+
+6 rows in set (0.01 sec)
+```
+
+假如经常需要这个格式的结果。 不必在每次需要时执行联结，
+创建一个视图， 每次需要时使用它即可。   
+
+```
+CREATE VIEW vendorlocations AS
+SELECT Concat(RTrim(vend_name), ' (', RTrim(vend_country), ')' ) AS vend_tit1e
+    -> FROM vendors
+    -> ORDER BY vend_name;
+```
+
+#### 22.2.3 用视图过滤不想要的数据  
+
+```
+CREATE VIEW customeremai 1list AS
+SELECT cust_idt cust_name , cust_emai1
+FROM customers
+WHERE cust_email IS NOT NULL ;
+```
+
+需要排除没有电子邮件地址的用户。 这里的WHERE子句过滤了cust_efnail列中具有NULL值的那些行， 使他们不被检索出来。  
+
+#### 22.2.4 使用视图与计算字段  
+
+```
+CREATE VIEW orderitemsexpanded AS
+SELECT order_num ,
+prod_id，
+quantity,
+item_price，
+quantity*item_price AS expanded_price
+FROM orderitems;
+```
+
+#### 22.2.5 更新视图  
+
+通常， 视图是可更新的（ 即， 可以对它们使用INSERT、 UPDATE和DELETE)。 更新一个视图将==更新其基表==（ 可以回忆一下， 视图本身没有数据)。 如果你对视图增加或删除行， 实际上是对其基表增加或删除行。 
+
+但是， 并非所有视图都是可更新的。 基本上可以说， 如果MySQL不能正确地确定被更新的基数据， 则不允许更新（ 包括插入和删除)。 这实际上意味着， 如果视图定义中有以下操作， 则不能进行视图的更新： 
+
+□ 分组 (使用GROUP BY和HAVING);
+□ 联结；
+□ 子查询；
+□ 并:
+□ 聚集函数（ Min( )、 Count( > 、 Sum( )等）; 
+
+□ DISTINCT；
+□ 导出（ 计算） 列  
+
+换句话说， 本章许多例子中的视图都是==不可更新的==。 这听上去好像是一个严重的限制， 但实际上不是， 因为视图主要用于数据检索。
+
+## 23  使用存储过程  
+
+### 23.1 存储过程  
+
+通常，一个完整的操作需要多条语句才能完成。   
+
+那么， 怎样编写此代码？  
+
+可以创建存储过程。 存储过程简单来说， 就是为以后的使用而保存的一条或多条MySQL语句的集合。 可将其视为批文件， 虽然它们的作用不仅限于批处理。
+
+### 23.2 为什么要使用存储过程  
+
+使用存储过程有3个主要的好处， 即简单、 安全、 髙性能。
+显然， 它们都很重要。 不过， 在将SQL代码转换为存储过程前， 也必须知道它的一些缺陷。
+□ 一般来说， 存储过程的编写比基本SQL语句复杂， 编写存储过程需要更高的技能， 更丰富的经验。  
+
+□ 你可能没有创建存储过程的安全访问权限。 许多数据库管理员限制存储过程的创建权限， 允许用户使用存储过程， 但不允许他们创建存储过程。
+
+### 23.3 使用存储过程  
+
+#### 23.3.1 执行存储过程 
+
+MySQL称存储过程的执行为调用， 因此MySQL执行存储过程的语句为CALL。 CALL接受存储过程的名字以及需要传递给它的任意参数。 请看以下例子： 
+
+```sql
+CALL productpricing(@pricelow, @pricehigh, @priceaverage);
+```
+
+#### 23.3.2 创建存储过程  
+
+```sql
+CREATE PROCEDURE productpricingQ
+SELECT Avg(prod_price) AS priceaverage
+FROM products;
+END；
+```
+
+此存储过程名为productpricing,用CREATE PROCEDURE productpricing( )语句定义。 如果存储过程接受参数， 它们将在（ ）中列举出来。 此存储过程没有参数， 但后跟的（ ） 仍然需要。 BEGIN和END语句用来限定存储过程体,过程体本身仅是一个简单的SELECT语句。
+
+```sql
+CALL productpricing();
+```
+
+ ==mysql命令行客户机==的分隔符如果你使用的是mysql命令
+行实用程序， 应该仔鍤阅读此说明。
+默认的MySQL语句分隔符为；（ 正如你已经在迄今为止所使用
+的MySQL语句中所看到的那样） 。 mysql命令行实用程序也
+使用； 作为语句分隔符。 如果==命令行实用程序要解释存储过程
+自身内的； 字符， 则它们最终不会成为存储过程的成分==， 这会
+使存储过程中的SQL出现句法错误。
+
+解决办法是临时更改命令行实用程序的语句分隔符， 如下所示：  
+
+```sql
+DELIMITER //
+CREATE PROCEDURE productpricing()
+BEGIN
+	SELECT Avg(procLprice) AS priceaverage
+	FROM products;
+END //
+DELIMITER ;#恢复使用；作为结束符
+```
+
+其中， ==DELIMITER / /告诉命令行实用程序使用 / /作为sql新的语
+句结束分隔符==， 可以看到标志存储过程结束的END定义为END
+ / / 而不是END ；这样， 存储过程体内的 ；仍然保持不动， 并且正确地传递给数据库引擎 。最后， 为恢复为原来的语句分隔符 ；
+
+#### 23.3.3 删除存储过程  
+
+```sql
+DROP PROCEDURE productpricing;
+```
+
+仅当存在时删除如果指定的过程不存在，则DROP PROCEDURE将产生一个错误。 当过程存在想删除它时（如果过程不存在也不产生错误）可使用DROP PROCEDURE IF EXISTS。  
+
+#### 23.3.4 使用参数  
+
+```sql
+DELIMITER //
+CREATE PROCEDURE productpricing(
+OUT pl DECIMAL(8,2),
+OUT ph DECIMAL(8,2),
+OUT pa DECIMAL(8,2)
+)
+BEGIN
+SELECT Min(prod_price)
+INTO pl
+FROM products;
+SELECT Max(prod_price)
+INTO ph
+FROM products;
+SELECT Avg(prod_price)
+INTO pa
+FROM products;
+END//
+DELIMITER ;
+```
+
+此存储过程接受3个参数： pl存储产品最低价格， ph存储产品
+最高价格， pa存储产品平均价格。 每个参数必须具有指定的类
+型， 这里使用十进制值。 关键字OUT指出相应的参数用来从存储过程传出一个值（ 返回给调用者)。 MySQL支持==IN (传递给存储过程)、 OUT (从存储过程传出， 如这里所用） 和INOUT(对存储过程传入和传出） 类型==的参数。   
+
+存储过程的代码位于BEGIN和END语句内， 如前所见， 它们是一系列SELECT语句， 用来检索值， 然后保存到相应的变量（ 通过指定==INTO关键字== )  
+
+为调用此修改过的存储过程， 必须指定3个变量名， 如下所示:  
+
+```sql
+CALL productpricing(@pricelow, @pricehigh, @priceaverage);
+```
+
+变置名所有MySQL变量都必须以@开始 ;
+
+在调用时， 这条语句并不显示任何数据。 它返回以后可以显示（ 或在其他处理中使用） 的变量。  
+
+为了显示检索出的产品平均价格， 可如下进行：  
+
+```
+mysql> SELECT @pricelow;
+```
+
+完整样例如下：
+
+```
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE productpricing(
+    -> OUT pl DECIMAL(8,2),
+    -> OUT ph DECIMAL(8,2),
+    -> OUT pa DECIMAL(8,2)
+    -> )
+    -> BEGIN
+    -> SELECT Min(prod_price)
+    -> INTO pl
+    -> FROM products;
+    -> SELECT Max(prod_price)
+    -> INTO ph
+    -> FROM products;
+    -> SELECT Avg(prod_price)
+    -> INTO pa
+    -> FROM products;
+    -> END//
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL productpricing(@pricelow, @pricehigh, @priceaverage);
+Query OK, 1 row affected, 1 warning (0.01 sec)
+
+mysql> SELECT @pricelow;
++-----------+
+| @pricelow |
++-----------+
+|      2.50 |
++-----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT @pricehigh;
++------------+
+| @pricehigh |
++------------+
+|      55.00 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT @priceaverage;
++---------------+
+| @priceaverage |
++---------------+
+|         16.13 |
++---------------+
+1 row in set (0.00 sec)
+mysql> SELECT @pricelow,@pricehigh,@priceaverage;
++-----------+------------+---------------+
+| @pricelow | @pricehigh | @priceaverage |
++-----------+------------+---------------+
+|      2.50 |      55.00 |         16.13 |
++-----------+------------+---------------+
+1 row in set (0.00 sec)
+```
+
+下面是另外一个例子， 这次使用IN和OUT参数。 ordertotal接受订单号并返回该订单的合计：
+
+```
+CREATE PROCEDURE ordertotal(
+IN onumber INI,
+OUT ototal DECIMAL(8 , 2)
+)
+BEGIN
+SELECT Sum(item_price*quantity)
+FROM orderitems
+WHERE order_num = onumber
+INTO ototal:
+END;
+```
+
+#### 23.3.5 建立智能存储过程  
+
+只有在存储过程内包含==业务规则和智能处理==时， 它们的威力才真正显现出来。  
+
+--和#都可以作为注释
+
+考虑这个场景。 你需要获得与以前一样的订单合计， 但需要对合计增加营业税， 不过只针对某些顾客（或许是你所在州中那些顾客)。 那么，
+你需要做下面几件事情：
+□ 获得合计（ 与以前i样)；
+□ 把营业税有条件地添加到合计；
+□ 返回合计（ 带或不带税)。
+存储过程的完整工作如下：
+
+```
+-- Name: ordertotal
+-- Parameters : onumber = order number
+-- taxable = 0 if not taxableT 1 if taxable
+-- ototal = order total variable
+CREATE PROCEDURE ordertotalC
+IN onumber IMT,
+IN taxable BOOLEAN,
+OUT ototal DECIMAL(8 ,2〕
+) COMMENT ‘Obtain order total , optionally adding tax’
+BEGIN
+    -- Declare variable for total
+    DECLARE total DECIMAL(8 , 2) ;
+    -- Declare tax percentage
+    DECLARE taxrate INT DEFAULT 6;
+    -- Get the order total
+    SELECT Sum(item_price*quantity)
+    FROM orderitems
+    WHERE order_num = onumber
+    INTO total;
+    -- Is this taxable?
+    IF taxable THEN
+        -- Yes , so add taxrate to the total
+        SELECT total+(total/100*taxrate) INTO total;
+    END IF;
+    --And finally, save to out variable
+	SELECT total INTO ototal:
+END;
+```
+
+用DECLARE语句定义了两个局部变量。 DECLARE要求指
+定变量名和数据类型， 它也支持可选的默认值（ 这个例子中的taxrate的默认被设置为6%).
+
+#### 23.3.6 检查存储过程  
+
+为显示用来创建一个存储过程的CREATE语句， 使用SHOW CREATE PROCEDURE语句：  
+
+```
+SHOW CREATE PROCEDURE ordertotal;
+```
+
+为了获得包括何时、 由谁创建等详细信息的存储过程列表， 使用SHOW PROCEDURE STATUS。  
+
+过程。 为限制其输出， 可使用LIKE指定一个过滤模式， 例如：
+SHOW PROCEDURE STATUS LIKE 'ordertotal';  
+
+## 24 使用游标
+
+### 24.1 游标  
+
+有时， 需要在检索出来的行中前进或后退一行或多行。 这就是使用游标的原因。 游标(cursor)是一个存储在MySQL服务器上的数据库査询，它不是一条SELECT语句， 而是被该语句检索出来的结果集。   茬存储了游标之后， 应用程序可以根据需要滚动或浏览其中的数据。
+
+游标主要用于交互式应用， 其中用户需要滚动屏幕上的数据， 对数据进行浏览或做出更改。  
+
+只能用于存储过程：不像多数DBMS， MySQL游标只能用于
+存储过程（ 和函数 ）。
+
+### 24.2 使用游标 
+
+使用游标涉及几个明确的步骤。  
+
+□ 在能够使用游标前， 必须声明（ 定义） 它。 这个过程实际上没有检索数据， 它只是定义要使用的SELECT语句。
+□ —旦声明后， 必须打开游标以供使用。 这个过程用前面定义的
+SELECT语句把数据实际检索出来。
+□ 对于填有数据的游标， 根据需要取出（ 检索） 各行。
+□ 在结束游标使用时， 必须关闭游标。  
+
+在声明游标后， 可根据需要频繁地打开和关闭游标。 在游标打开后，可根据需要频繁地执行取操作。  
+
+#### 24.2.1 创建游标  
+
+游标用DECLARE语句创建（参见第23章)。 DECLARE命名游标， 并定义相应的SELECT语句， 根据需要带WHERE和其他子句。 例如， 下面的语句定义了名为 ordernumbers的游标， 使用了可以检索所有订单的SELECT语句 。
+
+```
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE processorders()
+    -> BEGIN
+    -> DECLARE ordernumbers CURSOR
+    -> FOR
+    -> SELECT order_num FROM orders;
+    -> END//
+Query OK, 0 rows affected (0.02 sec)
+
+```
+
+#### 24.2.2 打开和关闭游标 
+
+```
+OPEN ordernumbers;
+CLOSE ordernumbers;
+```
+
+CLOSE释放游标使用的所有内部内存和资源， 因此在每个游标
+不再需要时都应该关闭。
+
+隐含关闭如果你不明确关闭游标， MySQL将会在到达END语句时自动关闭它。    
+
+```
+mysql> CREATE PROCEDURE processorders() BEGIN DECLARE ordernumbers CURSOR FOR SELECT order_num FROM orders; 
+    -> OPEN ordernumbers;
+    -> CLOSE ordernumbers;
+    -> END//
+Query OK, 0 rows affected (0.01 sec)
+```
+
+#### 24.2.3 使用游标数据  
+
+```
+mysql> CREATE PROCEDURE processorders() 
+BEGIN 
+	-> DECLARE o INT;
+	-> DECLARE ordernumbers CURSOR 
+	-> FOR 
+	-> SELECT order_num FROM orders; 
+    -> OPEN ordernumbers;
+    -> FETCH ordernumbers INTO o;
+    -> CLOSE ordernumbers;
+    -> END//
+Query OK, 0 rows affected (0.01 sec)
+```
+
+其中FETCH用来检索当前行的order_num列（将自动从第一行
+开始） 到一个名为0的局部声明的变量中。 对检索出的数据不
+做任何处理。  
+
+==在下一个例子中， 循环检索数据， 从第一行到最后一行;==
+
+![image-20220411021211644](MySQL必知必会.assets/image-20220411021211644.png)
+
+
+
+![image-20220411021252486](MySQL必知必会.assets/image-20220411021252486.png)
+
+## 25 使用触发器
+
+### 25.1 触发器  
 
